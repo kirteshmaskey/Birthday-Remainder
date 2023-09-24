@@ -57,7 +57,7 @@ const BirthdayList = () => {
                 (
                   birthdayData.map((data, index)=> {
                     return (
-                      <tr >
+                      <tr key={index}>
                         <td>{ data.name }</td>
                         <td>{ data.email }</td>
                         <td>{ data.dob.split('T')[0] }</td>

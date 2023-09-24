@@ -3,8 +3,7 @@ import { NavLink } from "react-router-dom"
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import "./style.css";
-// const BASE_URL = process.env.REACT_APP_BASE_URL;
-const BASE_URL = "http://localhost:8000";
+const BASE_URL = process.env.REACT_APP_BASE_URL;
 
 const Register = () => {
 
