@@ -2,10 +2,11 @@ import React, { useContext, useState } from "react";
 import "./style.css";
 import { LoginContext } from "./ContextProvider/Context";
 import { useNavigate, NavLink } from "react-router-dom";
+import { toast } from "react-toastify";
 const BASE_URL = process.env.REACT_APP_BASE_URL;
 
 const Header = () => {
-  const { logindata, setLoginData } = useContext(LoginContext);
+  const { validLogin, setValidLogin } = useContext(LoginContext);
   const [BDButton, setBDButton] = useState(false);
 
   const navigate = useNavigate();
@@ -22,7 +23,6 @@ const Header = () => {
 
   const handleUserLogout = async () => {
     let token = localStorage.getItem("usersdatatoken");
-    
     const res = await fetch(`${BASE_URL}/api/auth/logout`, {
       method: "GET",
       headers: {
@@ -31,14 +31,12 @@ const Header = () => {
       }
     });
 
-    const data = await res.json();
-
-    if (data.status === 201) {
+    if (res.status === 201) {
       localStorage.removeItem("usersdatatoken");
-      setLoginData(false);
+      setValidLogin(false);
       navigate("/");
     } else {
-      console.log("error");
+      toast.info("Please try again!!");
     }
   };
 
@@ -47,20 +45,20 @@ const Header = () => {
     <>
       <header>
         <nav>
-          <NavLink to="/">
-            <h1>Birthday Remainder</h1>
+          <NavLink to={validLogin? "/dashboard": "/"}>
+            <h2 className="text-dark">Birthday Remainder</h2>
           </NavLink>
           {
-            logindata ?
+            validLogin ?
               <div>
                 <>
                 { BDButton ?
-                    <button onClick={handleListClick} className="dash-btn"> Birthday List </button> 
+                    <button onClick={handleListClick} className="btn btn-primary dash-btn"> Birthday List </button> 
                   :
-                    <button onClick={handleDashClick} className="dash-btn"> Add </button> 
+                    <button onClick={handleDashClick} className="btn btn-primary dash-btn"> Add </button> 
                   }
                 </>
-                <button onClick={handleUserLogout} className="logout-btn"> Logout </button> 
+                <button onClick={handleUserLogout} className="btn btn-danger dash-btn"> Logout </button> 
               </div>
             :
               <></>

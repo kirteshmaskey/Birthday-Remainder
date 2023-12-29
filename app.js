@@ -77,9 +77,14 @@ const checkTodaysBirthday = async () => {
 //   checkTodaysBirthday();
 // }, 24 * 60 * 60 * 1000);
 
-cron.schedule('0 1 * * *', function() {
+cron.schedule('0 0 2 * * *', function() {
   checkTodaysBirthday();
 });
+
+// cron.schedule('0 */8 */2 * * *', function() {
+//   console.log("Running");
+// });
+
 
 app.listen(port, ()=>{
   console.log(`Server running on port ::: ${port}`);

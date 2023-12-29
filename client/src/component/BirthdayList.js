@@ -1,90 +1,65 @@
-import React, { useEffect, useState } from "react";
-import { ToastContainer, toast } from "react-toastify";
-import "react-toastify/dist/ReactToastify.css";
-import CircularProgress from "@mui/material/CircularProgress";
-import Box from "@mui/material/Box";
-const BASE_URL = process.env.REACT_APP_BASE_URL;
+import { useState } from "react";
 
-const BirthdayList = () => {
-
-  const [birthdayData, setBirthdayData] = useState([]);
-  const [isData, setIsData] = useState(false);
-
-  const getAllBirthdays = async () => {
-    try {
-      const token = localStorage.getItem("usersdatatoken");
-      const data = await fetch(`${BASE_URL}/api/get-all-dobs`, {
-        method: "GET",
-        headers: {
-          "Content-Type": "application/json",
-          authorization: token
-        }
-      });
-      const res = await data.json();
-
-      if(data.status === 201) {
-        setIsData(true);
-        setBirthdayData(res.data);
-      }
-      if(data.status === 422) {
-        setIsData(false);
-        toast.error(res.message);
-      }
-
-    } catch (error) {
-      toast.error("Something went wrong please try again");
-    }
-  }
-
-  useEffect(()=> {
-    getAllBirthdays();
-  }, []);
+const BirthdayList = ({ birthday, showDOB }) => {
+  const [user, setUser] = useState(null);
+  
+  const ShowModal = () => {
+    return (
+      <div
+        className={`modal fade ${user ? "show d-block" : ""}`}
+        tabIndex="-1"
+        aria-labelledby="staticBackdropLabel"
+        aria-hidden="true"
+        onClick={() => setUser(null)}
+      >
+        <div className="modal-dialog modal-dialog-centered" onClick={e => e.stopPropagation()}>
+          <div className="modal-content">
+            <div className="modal-header">
+              <h5 className="modal-title fs-5" id="staticBackdropLabel">
+                {user?.name}
+              </h5>
+              <button
+                type="button"
+                className="btn-close"
+                onClick={() => setUser(null)}
+              /> 
+            </div>
+            <div className="modal-body text-start">
+              <p><span className="font-weight-bold">Name: </span> {user?.name}</p>
+              <p><span className="font-weight-bold">Date of Birth: </span> {user?.dob.split("T")[0]}</p>
+              <p><span className="font-weight-bold">Email: </span> {user?.email}</p>
+              <p><span className="font-weight-bold">Phone Number: </span> {user?.phone}</p>
+            </div>
+            <div className="modal-footer">
+              <button
+                type="button"
+                className="btn btn-secondary"
+                onClick={() => setUser(null)}
+              >
+                Close
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  };
 
   return (
     <>
-      <div className="container">
-        <table className="table table-striped">
-          <thead>
-            <tr>
-              <th>Name</th>
-              <th>Email</th>
-              <th>Date of Birth</th>
+      <tbody>
+        {birthday?.map((bd, index) => {
+          return (
+            <tr key={index} onClick={() => setUser(bd)} className="cursor-pointer">
+              <td className="text-center">{bd.name}</td>
+              {showDOB && (
+                <td className="text-center">{bd.dob.split("T")[0]}</td>
+              )}
             </tr>
-          </thead>
-          <tbody>
-            {
-              isData ?
-                (
-                  birthdayData.map((data, index)=> {
-                    return (
-                      <tr key={index}>
-                        <td>{ data.name }</td>
-                        <td>{ data.email }</td>
-                        <td>{ data.dob.split('T')[0] }</td>
-                      </tr>
-                    )
-                  })
-                  // <></>
-                )
-              :
-                <>
-                  <Box
-                    sx={{
-                      display: "flex",
-                      justifyContent: "center",
-                      alignItems: "center",
-                      height: "100vh",
-                    }}
-                  >
-                    Loading... &nbsp;
-                    <CircularProgress />
-                  </Box>
-                </>
-            }
-          </tbody>
-        </table>
-      </div>
-      <ToastContainer />
+          );
+        })}
+      </tbody>
+      <ShowModal />
     </>
   );
 };

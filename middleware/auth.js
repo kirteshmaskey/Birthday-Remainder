@@ -18,9 +18,7 @@ const auth = async (req, res, next) => {
 
     next();
   } catch (error) {
-    res
-      .status(422)
-      .json({ message: "Unauthorized no token provide" });
+    res.status(403).json({ message: "Unauthorized user" });
   }
 };
 

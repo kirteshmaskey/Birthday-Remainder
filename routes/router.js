@@ -7,7 +7,6 @@ router.post('/set-dob',auth, async (req, res) => {
   try {
     const { name, email, phone, dob} = req.body;
     const userId = req.rootUser._id;
-
     const saveData = new bd({
       userId, name, phone, 
       dob: new Date(dob),
@@ -17,7 +16,7 @@ router.post('/set-dob',auth, async (req, res) => {
 
     res.status(201).json({ message: "Remainder set successfully" });
   } catch (error) {
-    res.status(422).json({ message: error.message });
+    res.status(422).json({ message: "Something went wrong" });
   }
 });
 
@@ -25,11 +24,10 @@ router.post('/set-dob',auth, async (req, res) => {
 router.get('/get-all-dobs', auth, async (req, res) => {
   const userId = req.userId;
   try {
-    const data = await bd.find({userId: userId});
+    const data = await bd.find({userId: userId}, {_id:0, __v:0, userId:0});
     res.status(201).json({ data: data });
   } catch (error) {
-    console.log(error);
-    res.status(422).json({ message: error.message });
+    res.status(422).json({ message: "Something went wrong" });
   }
 });
 

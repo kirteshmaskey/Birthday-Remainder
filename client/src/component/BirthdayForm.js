@@ -1,15 +1,20 @@
-import React, { useState } from "react";
-import { ToastContainer, toast } from "react-toastify";
+import React, { useContext, useEffect, useState } from "react";
+import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+import { LoginContext } from "./ContextProvider/Context";
+import { useNavigate } from "react-router-dom";
 const BASE_URL = process.env.REACT_APP_BASE_URL;
+const today = new Date().toISOString().split("T")[0];
 
 const BirthdayForm = () => {
+  const { validLogin, setValidLogin } = useContext(LoginContext);
   const [inputValue, setInputValue] = useState({
     name: "",
     email: "",
     phone: "",
     dob: "",
   });
+  const navigate = useNavigate();
 
   const getValue = (val) => {
     const { name, value } = val.target;
@@ -32,16 +37,18 @@ const BirthdayForm = () => {
       toast.warning("Email is required!");
     } else if (!email.includes("@")) {
       toast.warning("Invalid email");
+    } else if (phone === "") {
+      toast.warning("Phone is required!");
     } else if (dob === "") {
       toast.warning("Date of Birth is required");
     } else {
       const token = localStorage.getItem("usersdatatoken");
-      
+
       const res = await fetch(`${BASE_URL}/api/set-dob`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          authorization: token
+          authorization: token,
         },
         body: JSON.stringify({
           name,
@@ -62,11 +69,17 @@ const BirthdayForm = () => {
           dob: "",
         });
       }
-      if(res.status === 422) {
+      if (res.status === 422) {
         toast.error(data.message);
       }
     }
   };
+
+  useEffect(() => {
+    if (!validLogin) {
+      navigate("/");
+    }
+  }, []);
 
   return (
     <>
@@ -78,7 +91,9 @@ const BirthdayForm = () => {
 
           <form>
             <div className="form_input">
-              <label htmlFor="name">Name</label>
+              <label htmlFor="name">
+                Name <span className="text-danger">*</span>
+              </label>
               <input
                 type="text"
                 onChange={getValue}
@@ -89,7 +104,9 @@ const BirthdayForm = () => {
               />
             </div>
             <div className="form_input">
-              <label htmlFor="email">Email</label>
+              <label htmlFor="email">
+                Email <span className="text-danger">*</span>
+              </label>
               <input
                 type="email"
                 onChange={getValue}
@@ -100,7 +117,9 @@ const BirthdayForm = () => {
               />
             </div>
             <div className="form_input">
-              <label htmlFor="phone">Phone Number</label>
+              <label htmlFor="phone">
+                Phone Number <span className="text-danger">*</span>
+              </label>
               <input
                 value={inputValue.phone}
                 onChange={getValue}
@@ -111,13 +130,16 @@ const BirthdayForm = () => {
             </div>
 
             <div className="form_input">
-              <label htmlFor="dob">Date of Birth</label>
+              <label htmlFor="dob">
+                Date of Birth <span className="text-danger">*</span>
+              </label>
               <input
                 type="date"
                 value={inputValue.dob}
                 onChange={getValue}
                 name="dob"
                 id="dob"
+                max={today}
                 placeholder="Date of Birth"
               />
             </div>
@@ -125,9 +147,7 @@ const BirthdayForm = () => {
             <button className="btn" onClick={handleFormInput}>
               Save
             </button>
-            
           </form>
-          <ToastContainer />
         </div>
       </section>
     </>

@@ -4,7 +4,6 @@ const User = require("../models/userSchema");
 var bcrypt = require("bcryptjs");
 const auth = require("../middleware/auth");
 
-
 // for user registration
 authRouter.post("/register", async (req, res) => {
   const { name, email, password, cpassword } = req.body;
@@ -19,12 +18,14 @@ authRouter.post("/register", async (req, res) => {
     if (preuser) {
       res.status(422).json({ message: "Email is Already Registered" });
     } else if (password !== cpassword) {
-      res.status(422).json({ message: "Password and Confirm Password Not Match" });
+      res
+        .status(422)
+        .json({ message: "Password and Confirm Password Not Match" });
     } else {
       const newUser = new User({
         name,
         email: email.toLowerCase(),
-        password
+        password,
       });
 
       const storeData = await newUser.save();
@@ -32,26 +33,26 @@ authRouter.post("/register", async (req, res) => {
       res.status(201).json({ status: 201, storeData });
     }
   } catch (error) {
-    res
-      .status(422)
-      .json({ message: error.message });
+    res.status(422).json({ message: "Something went wrong" });
   }
 });
-
 
 // user Login
 authRouter.post("/login", async (req, res) => {
   const { email, password } = req.body;
 
   if (!email || !password) {
-    res.status(422).json({ message: "fill all the details" });
+    res.status(422).json({ message: "Fill all the details" });
   }
 
   try {
     const userValid = await User.findOne({ email: email.toLowerCase() });
 
     if (userValid) {
-      const isPasswordCorrect = await bcrypt.compare(password, userValid.password);
+      const isPasswordCorrect = await bcrypt.compare(
+        password,
+        userValid.password
+      );
 
       if (!isPasswordCorrect) {
         res.status(422).json({ message: "Incorrect password" });
@@ -61,21 +62,17 @@ authRouter.post("/login", async (req, res) => {
 
         // cookiegenerate
         res.cookie("usercookie", token, {
-          expires: new Date(Date.now() + (3*60*60*100)),
+          expires: new Date(Date.now() + 3 * 60 * 60 * 1000), // expires in 3 hr
           httpOnly: true,
         });
 
-        const result = {
-          userValid,
-          token,
-        };
-        res.status(201).json({ result });
+        res.status(201).json({ token });
       }
-    }else {
-      res.status(422).json({ message: "Invalid username" });
+    } else {
+      res.status(422).json({ message: "Invalid email" });
     }
   } catch (error) {
-    res.status(422).json({ message: error.message });
+    res.status(422).json({ message: "Something went wrong" });
   }
 });
 
@@ -83,9 +80,13 @@ authRouter.post("/login", async (req, res) => {
 authRouter.get("/validuser", auth, async (req, res) => {
   try {
     const validUser = await User.findOne({ _id: req.userId });
-    res.status(201).json({ validUser });
+    if (validUser) {
+      res.status(201).json({ message: "Valid User" });
+    } else {
+      res.status(422).json({ message: "Unauthorized User" });
+    }
   } catch (error) {
-    res.status(422).json({ message: error.message });
+    res.status(422).json({ message: "Something went wrong" });
   }
 });
 
@@ -101,9 +102,9 @@ authRouter.get("/logout", auth, async (req, res) => {
 
     req.rootUser.save();
 
-    res.status(201).json({ status: 201 });
+    res.status(201).json({ message: "Logged out" });
   } catch (error) {
-    res.status(422).json({ message: error.message });
+    res.status(422).json({ message: "Something went wrong" });
   }
 });
 
